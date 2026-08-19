@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Plus, Search, UserPlus, X, LucideAngularModule } from 'lucide-angular';
-
+import { ToastService } from '../../../core/services/toast.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { PacienteActivo, RegistroPacienteRequest } from '../../../core/models/api.model';
@@ -17,6 +17,7 @@ export class PacientesComponent {
   private readonly usuarioService = inject(UsuarioService);
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+  private readonly toastService = inject(ToastService);
 
   readonly Plus = Plus;
   readonly Search = Search;
@@ -54,6 +55,7 @@ export class PacientesComponent {
       },
       error: () => {
         this.error.set('No se pudo cargar pacientes.');
+        this.toastService.error('No se pudo cargar pacientes.');
         this.cargando.set(false);
       }
     });
@@ -71,27 +73,30 @@ export class PacientesComponent {
   }
 
   registrarPaciente(): void {
-    if (this.pacienteForm.invalid) {
-      this.pacienteForm.markAllAsTouched();
-      this.error.set('Complete correctamente los datos del paciente.');
-      return;
-    }
-
-    this.guardando.set(true);
-    this.error.set('');
-
-    const request = this.pacienteForm.getRawValue() as RegistroPacienteRequest;
-
-    this.authService.registrarPaciente(request).subscribe({
-      next: () => {
-        this.guardando.set(false);
-        this.cerrarModal();
-        this.listarPacientes();
-      },
-      error: () => {
-        this.guardando.set(false);
-        this.error.set('No se pudo registrar el paciente.');
-      }
-    });
+  if (this.pacienteForm.invalid) {
+    this.pacienteForm.markAllAsTouched();
+    this.error.set('Complete correctamente los datos del paciente.');
+    this.toastService.warning('Complete correctamente los datos del paciente.');
+    return;
   }
+
+  this.guardando.set(true);
+  this.error.set('');
+
+  const request = this.pacienteForm.getRawValue() as RegistroPacienteRequest;
+
+  this.authService.registrarPaciente(request).subscribe({
+    next: () => {
+      this.guardando.set(false);
+      this.toastService.success('Paciente registrado correctamente.');
+      this.cerrarModal();
+      this.listarPacientes();
+    },
+    error: () => {
+      this.guardando.set(false);
+      this.error.set('No se pudo registrar el paciente.');
+      this.toastService.error('No se pudo registrar el paciente.');
+    }
+  });
+}
 }

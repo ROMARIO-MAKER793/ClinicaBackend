@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TransaccionComercialRepository extends JpaRepository<TransaccionComercial, Integer> {
+
+    Integer countBySerie(String serie);
 }

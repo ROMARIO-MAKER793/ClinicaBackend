@@ -53,4 +53,10 @@ export class AuthService {
         responseType: 'text'
         });
     }
+
+    logoutBackend(): Observable<string> {
+        return this.http.post(`${this.apiUrl}/logout`, {}, {
+            responseType: 'text'
+        });
+        }
 }

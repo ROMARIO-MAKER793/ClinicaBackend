@@ -51,7 +51,9 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll() // 
                 // 2. El Catálogo solo es público para lectura (GET)
                 .requestMatchers(HttpMethod.GET, "/catalogo/**").permitAll()
-                // 3. Todo lo demás requiere token
+                // 3. Exponer la ruta de error para que los 404 se muestren correctamente
+                .requestMatchers("/error").permitAll()
+                // 4. Todo lo demás requiere token
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

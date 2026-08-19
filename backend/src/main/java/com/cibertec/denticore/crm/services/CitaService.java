@@ -16,4 +16,15 @@ public interface CitaService {
     Page<CitaListadoDTO> listarAgendaDiaria(LocalDate fecha, Pageable pageable);
 
     CitaResponseDTO actualizarEstado(Integer idCita, ActualizarEstadoDTO dto);
+
+    Page<CitaListadoDTO> listarMisCitas(
+        String dniUsuarioAutenticado,
+        LocalDate fecha,
+        Pageable pageable);
+
+    Page<CitaListadoDTO> listarMisCitasPaciente(
+        String dniUsuarioAutenticado,
+        Pageable pageable);
+
+    
 }

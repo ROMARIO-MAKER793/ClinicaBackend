@@ -118,4 +118,47 @@ public class CitaServiceImpl implements CitaService {
         dto.setMensaje(mensaje);
         return dto;
     }
+
+    @Override
+@Transactional(readOnly = true)
+public Page<CitaListadoDTO> listarMisCitas(
+        String dniUsuarioAutenticado,
+        LocalDate fecha,
+        Pageable pageable) {
+
+    LocalDate fechaConsulta = fecha != null ? fecha : LocalDate.now();
+    LocalDateTime inicio = fechaConsulta.atStartOfDay();
+    LocalDateTime fin = fechaConsulta.atTime(LocalTime.MAX);
+
+    Odontologo odontologo = odontologoRepository
+            .findByUsuarioDni(dniUsuarioAutenticado)
+            .orElseThrow(() -> new RuntimeException("Odontólogo no encontrado"));
+
+     return citaRepository
+            .findAgendaDiariaByOdontologo(
+                    odontologo.getIdUsuario(),
+                    inicio,
+                    fin,
+                    pageable)
+            .map(this::mapearCitaListado);
+    }
+
+
+    @Override
+@Transactional(readOnly = true)
+public Page<CitaListadoDTO> listarMisCitasPaciente(
+        String dniUsuarioAutenticado,
+        Pageable pageable) {
+
+    Paciente paciente = pacienteRepository
+            .findByUsuarioDni(dniUsuarioAutenticado)
+            .orElseThrow(() ->
+                    new RuntimeException("Paciente no encontrado"));
+
+    return citaRepository
+            .findByPaciente(
+                    paciente.getIdUsuario(),
+                    pageable)
+            .map(this::mapearCitaListado);
+}
 }

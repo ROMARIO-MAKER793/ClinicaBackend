@@ -1,0 +1,306 @@
+<section class="space-y-6">
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-ink">Agenda de citas</h1>
+      <p class="text-sm text-ink-muted">Gestión diaria de pacientes y estados de atención</p>
+    </div>
+
+    @if (rolActual() !== 'ODONTOLOGO') {
+      <button
+        type="button"
+        (click)="abrirModalNuevaCita()"
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-hover"
+      >
+        Nueva cita
+      </button>
+    }
+
+    <button
+      type="button"
+      (click)="listarCitas()"
+      class="inline-flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-white px-4 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-surface-main"
+    >
+      <lucide-icon [img]="RefreshCcw" class="h-4 w-4"></lucide-icon>
+      Actualizar
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    
+    <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-ink-muted">Citas del día</p>
+          <p class="mt-1 text-2xl font-bold text-ink">{{ citas().length }}</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-soft text-primary">
+          <lucide-icon [img]="Calendar" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-ink-muted">Pendientes</p>
+          <p class="mt-1 text-2xl font-bold text-ink">{{ totalPorEstado('PENDIENTE') }}</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-status-warning">
+          <lucide-icon [img]="Clock" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-ink-muted">En atención</p>
+          <p class="mt-1 text-2xl font-bold text-ink">{{ totalPorEstado('EN_CURSO') }}</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-soft text-primary">
+          <lucide-icon [img]="UserCheck" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-sm text-ink-muted">Cargando agenda...</p>
+  }
+
+  @if (error()) {
+    <div class="rounded-xl bg-status-error/10 p-4 text-sm text-status-error">
+      {{ error() }}
+    </div>
+  }
+
+  <div class="overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-surface-border bg-surface-main text-ink-muted">
+        <tr>
+          <th class="px-5 py-4">Hora</th>
+          <th class="px-5 py-4">Paciente</th>
+          <th class="px-5 py-4">DNI</th>
+          <th class="px-5 py-4">Odontólogo</th>
+          <th class="px-5 py-4">Estado</th>
+          <th class="px-5 py-4 text-right">Acción</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (cita of citas(); track cita.idCita) {
+          <tr class="border-b border-surface-border transition hover:bg-surface-main/70 last:border-0">
+            <td class="px-5 py-4 font-medium text-primary">
+              {{ cita.fechaHora | date:'shortTime' }}
+            </td>
+
+            <td class="px-5 py-4 font-medium text-ink">
+              {{ cita.pacienteNombreCompleto }}
+            </td>
+
+            <td class="px-5 py-4 text-ink-muted">
+              {{ cita.pacienteDni }}
+            </td>
+
+            <td class="px-5 py-4 text-ink-muted">
+              {{ cita.odontologoNombre }}
+            </td>
+
+            <td class="px-5 py-4">
+              <span class="rounded-md border px-2 py-1 text-xs font-medium" [class]="claseEstado(cita.estado)">
+                {{ textoEstado(cita.estado) }}
+              </span>
+            </td>
+
+            <td class="px-5 py-4">
+              <div class="flex justify-end gap-2">
+                
+                @if (cita.estado === 'PENDIENTE') {
+                  <button
+                    type="button"
+                    (click)="cambiarEstado(cita.idCita, 'CONFIRMADA')"
+                    class="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-hover"
+                  >
+                    Confirmar
+                  </button>
+                }
+
+                @if (cita.estado === 'CONFIRMADA') {
+                  <button
+                    type="button"
+                    (click)="cambiarEstado(cita.idCita, 'EN_SALA')"
+                    class="rounded-lg bg-status-warning px-3 py-1.5 text-xs font-medium text-white transition"
+                  >
+                    Sala espera
+                  </button>
+                }
+
+                @if (cita.estado === 'EN_SALA' && rolActual() !== 'ODONTOLOGO') {
+                    <span class="text-xs font-medium text-ink-muted">En sala</span>
+                     }
+                              
+
+               @if (cita.estado === 'EN_SALA' && rolActual() === 'ODONTOLOGO') {
+                <div class="flex flex-col items-end gap-1">
+                  @if (hayCitaEnCurso()) {
+                    <span class="text-[11px] font-medium text-ink-muted">
+                      Finaliza la atención actual
+                    </span>
+                  }
+
+                  <button
+                    type="button"
+                    (click)="atenderCita(cita)"
+                    [disabled]="hayCitaEnCurso()"
+                    class="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Atender
+                  </button>
+                </div>
+              }
+
+
+                @if (cita.estado === 'EN_CURSO' && rolActual() === 'ODONTOLOGO') {
+                  <button
+                    type="button"
+                    (click)="irOdontograma(cita)"
+                    class="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-hover"
+                  >
+                    Odontograma
+                  </button>
+                }
+
+                @if (cita.estado === 'FINALIZADA' && rolActual() !== 'ODONTOLOGO') {
+                  <span class="text-xs font-medium text-ink-muted">Facturada</span>
+                }
+                
+                @if (cita.estado === 'ATENDIDA' && rolActual() !== 'ODONTOLOGO') {
+                  <button
+                    type="button"
+                    (click)="irFacturacion(cita)"
+                    class="rounded-lg bg-status-success px-3 py-1.5 text-xs font-medium text-white transition"
+                  >
+                    Facturar
+                  </button>
+                }
+
+                @if (cita.estado === 'FINALIZADA') {
+                  <span class="text-xs font-medium text-ink-muted">Finalizada</span>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="px-5 py-8 text-center text-ink-muted">
+              No hay citas registradas para hoy.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (modalNuevaCita()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div class="w-full max-w-xl rounded-2xl border border-surface-border bg-white p-6 shadow-xl">
+        
+        <div class="mb-5 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-ink">Nueva cita</h2>
+            <p class="text-sm text-ink-muted">Registra una cita para un paciente y odontólogo.</p>
+          </div>
+          <button
+            type="button"
+            (click)="cerrarModalNuevaCita()"
+            class="rounded-lg px-3 py-1 text-sm text-ink-muted hover:bg-surface-main"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="grid gap-4">
+          
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Paciente</label>
+            <select
+              [(ngModel)]="nuevaCita.idPaciente"
+              class="w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option [ngValue]="0">Selecciona paciente</option>
+              @for (paciente of pacientes(); track paciente.id) {
+                <option [ngValue]="paciente.id">
+                  {{ paciente.nombres }} {{ paciente.apellidos }} - {{ paciente.dni }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Odontólogo</label>
+            <select
+              [(ngModel)]="nuevaCita.idOdontologo"
+              class="w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option [ngValue]="0">Selecciona odontólogo</option>
+              @for (odontologo of odontologos(); track odontologo.id) {
+                <option [ngValue]="odontologo.id">
+                  {{ odontologo.nombres }} {{ odontologo.apellidos }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Fecha y hora</label>
+            <input
+              type="datetime-local"
+              [(ngModel)]="nuevaCita.fechaHora"
+              class="w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Adelanto</label>
+            <input
+              type="number"
+              [(ngModel)]="nuevaCita.montoAdelanto"
+              class="w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Referencia</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaCita.referenciaAdelanto"
+              placeholder="YAPE-001, efectivo, etc."
+              class="w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            (click)="cerrarModalNuevaCita()"
+            class="rounded-xl border border-surface-border px-4 py-2 text-sm font-medium text-ink hover:bg-surface-main"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            (click)="registrarCita()"
+            class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+          >
+            Registrar cita
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</section>

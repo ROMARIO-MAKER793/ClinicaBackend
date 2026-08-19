@@ -1,0 +1,144 @@
+<section class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-ink">Facturación</h1>
+      <p class="text-sm text-ink-muted">Registro de pago por atención odontológica</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="volver()"
+      class="rounded-xl border border-surface-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-surface-main"
+    >
+      Volver
+    </button>
+  </div>
+
+  <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+    <div class="grid gap-4 md:grid-cols-4">
+      <div>
+        <p class="text-xs text-ink-muted">ID cita</p>
+        <p class="font-semibold text-ink">{{ idCita }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-ink-muted">ID paciente</p>
+        <p class="font-semibold text-ink">{{ idPaciente }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-ink-muted">Paciente</p>
+        <p class="font-semibold text-ink">{{ paciente }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-ink-muted">DNI</p>
+        <p class="font-semibold text-ink">{{ dni }}</p>
+      </div>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-xl bg-status-error/10 p-4 text-sm text-status-error">
+      {{ error() }}
+    </div>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card lg:col-span-2">
+      <h2 class="mb-4 text-lg font-bold text-ink">Detalle de facturación</h2>
+
+      <div class="overflow-hidden rounded-xl border border-surface-border">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-surface-main text-ink-muted">
+            <tr>
+              <th class="px-4 py-3">Descripción</th>
+              <th class="px-4 py-3">Pieza</th>
+              <th class="px-4 py-3">Cantidad</th>
+              <th class="px-4 py-3">Precio</th>
+              <th class="px-4 py-3 text-right">Subtotal</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (item of itemsCarrito(); track $index) {
+              <tr class="border-t border-surface-border">
+                <td class="px-4 py-3 font-medium text-ink">
+                  {{ item.descripcion || ('Item #' + item.idItemCatalogo) }}
+                </td>
+
+                <td class="px-4 py-3 text-ink-muted">
+                  {{ item.numeroPieza || '-' }}
+                </td>
+
+                <td class="px-4 py-3 text-ink-muted">
+                  {{ item.cantidad }}
+                </td>
+
+                <td class="px-4 py-3 text-ink-muted">
+                  S/ {{ item.precioAplicado }}
+                </td>
+
+                <td class="px-4 py-3 text-right font-semibold text-ink">
+                  S/ {{ item.cantidad * item.precioAplicado }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-ink-muted">
+                  Aún no hay ítems para facturar.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+      <h2 class="mb-4 text-lg font-bold text-ink">Resumen de pago</h2>
+
+      <div class="space-y-4">
+        <div class="flex justify-between text-sm">
+          <span class="text-ink-muted">Total</span>
+          <span class="font-bold text-ink">S/ {{ total() }}</span>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-ink">Método de pago</label>
+          <select
+            [(ngModel)]="metodoPago"
+            class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          >
+            <option value="Efectivo">Efectivo</option>
+            <option value="Yape">Yape</option>
+            <option value="Tarjeta">Tarjeta</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-ink">Monto pagado</label>
+          <input
+            type="number"
+            [(ngModel)]="montoPagado"
+            class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          />
+        </div>
+
+        <div class="flex justify-between rounded-xl bg-surface-main p-3 text-sm">
+          <span class="text-ink-muted">Saldo</span>
+          <span class="font-bold text-ink">S/ {{ saldo() }}</span>
+        </div>
+
+        <button
+          type="button"
+          (click)="registrarPago()"
+          [disabled]="procesando()"
+          class="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+        >
+          {{ procesando() ? 'Registrando...' : 'Registrar pago' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

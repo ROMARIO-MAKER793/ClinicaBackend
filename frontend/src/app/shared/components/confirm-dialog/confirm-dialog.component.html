@@ -1,0 +1,32 @@
+@if (confirmService.confirmacion(); as confirmacion) {
+  <div class="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-2xl border border-surface-border bg-white p-6 shadow-xl">
+      <h2 class="text-lg font-bold text-ink">
+        {{ confirmacion.titulo }}
+      </h2>
+
+      <p class="mt-2 text-sm text-ink-muted">
+        {{ confirmacion.mensaje }}
+      </p>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          (click)="confirmService.cerrar()"
+          class="rounded-xl border border-surface-border px-4 py-2 text-sm font-medium text-ink transition hover:bg-surface-main"
+        >
+          {{ confirmacion.textoCancelar }}
+        </button>
+
+        <button
+          type="button"
+          (click)="confirmService.confirmar()"
+          class="rounded-xl px-4 py-2 text-sm font-medium transition"
+          [ngClass]="claseBoton(confirmacion.tipo)"
+        >
+          {{ confirmacion.textoConfirmar }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

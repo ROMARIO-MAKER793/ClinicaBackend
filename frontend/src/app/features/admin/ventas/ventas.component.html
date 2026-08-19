@@ -1,0 +1,59 @@
+<section class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-ink">Ventas</h1>
+      <p class="text-sm text-ink-muted">Listado simulado de pagos registrados</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="refrescar()"
+      class="rounded-xl border border-surface-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-surface-main"
+    >
+      Actualizar
+    </button>
+  </div>
+
+  <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+    <p class="text-xs text-ink-muted">Total vendido</p>
+    <p class="mt-1 text-2xl font-bold text-ink">S/ {{ totalVendido() }}</p>
+  </div>
+
+  <div class="overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-surface-main text-ink-muted">
+        <tr>
+          <th class="px-5 py-4">Fecha</th>
+          <th class="px-5 py-4">Cita</th>
+          <th class="px-5 py-4">Paciente</th>
+          <th class="px-5 py-4">DNI</th>
+          <th class="px-5 py-4">Método</th>
+          <th class="px-5 py-4 text-right">Total</th>
+          <th class="px-5 py-4 text-right">Pagado</th>
+          <th class="px-5 py-4 text-right">Saldo</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (venta of ventas(); track $index) {
+          <tr class="border-t border-surface-border">
+            <td class="px-5 py-4 text-ink-muted">{{ venta.fecha | date:'short' }}</td>
+            <td class="px-5 py-4 font-medium text-primary">#{{ venta.idCita }}</td>
+            <td class="px-5 py-4 font-medium text-ink">{{ venta.paciente }}</td>
+            <td class="px-5 py-4 text-ink-muted">{{ venta.dni }}</td>
+            <td class="px-5 py-4 text-ink-muted">{{ venta.metodoPago }}</td>
+            <td class="px-5 py-4 text-right font-semibold">S/ {{ venta.total }}</td>
+            <td class="px-5 py-4 text-right">S/ {{ venta.montoPagado }}</td>
+            <td class="px-5 py-4 text-right">S/ {{ venta.saldo }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="px-5 py-8 text-center text-ink-muted">
+              Aún no hay ventas registradas.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

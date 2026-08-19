@@ -1,0 +1,358 @@
+<section class="space-y-6">
+
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-ink">Odontograma</h1>
+      <p class="text-sm text-ink-muted">Registro clínico por pieza y superficie dental</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="volver()"
+      class="rounded-xl border border-surface-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-surface-main transition-colors"
+    >
+      Volver
+    </button>
+  </div>
+
+  <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+      <div>
+        <p class="text-xs text-ink-muted">ID cita</p>
+        <p class="font-semibold text-ink">{{ idCita }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-ink-muted">Paciente</p>
+        <p class="font-semibold text-ink">{{ paciente }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-ink-muted">DNI</p>
+        <p class="font-semibold text-ink">{{ dni }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-ink-muted">Tipo odontograma</p>
+        <select
+          [(ngModel)]="request.tipoOdontograma"
+          class="mt-1 w-full rounded-xl border border-surface-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+        >
+          <option value="Inicial">Inicial</option>
+          <option value="Evolución">Evolución</option>
+          <option value="Control">Control</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-xl bg-status-error/10 p-4 text-sm text-status-error">
+      {{ error() }}
+    </div>
+  }
+
+  @if (exito()) {
+    <div class="rounded-xl bg-status-success/10 p-4 text-sm text-status-success">
+      {{ exito() }}
+    </div>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-12 items-start">
+    
+    <div class="space-y-6 lg:col-span-7 xl:col-span-8">
+      
+      <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card overflow-hidden">
+        <div class="mb-5">
+          <h2 class="text-lg font-bold text-ink">Odontograma interactivo</h2>
+          <p class="text-sm text-ink-muted">Selecciona una pieza y una superficie dental.</p>
+        </div>
+
+        <div class="space-y-7 overflow-x-auto pb-3 scrollbar-thin">
+          
+          <div class="min-w-max px-2">
+            <p class="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
+              Arcada superior
+            </p>
+
+            <div class="flex items-center justify-center gap-2.5">
+              @for (pieza of piezasSuperioresDerecha; track pieza) {
+                <app-tooth-svg
+                  [pieza]="pieza"
+                  [seleccionado]="piezaSeleccionada() === pieza"
+                  (seleccionar)="seleccionarDental($event)"
+                />
+              }
+
+              <div class="h-12 w-px bg-surface-border mx-1"></div>
+
+              @for (pieza of piezasSuperioresIzquierda; track pieza) {
+                <app-tooth-svg
+                  [pieza]="pieza"
+                  [seleccionado]="piezaSeleccionada() === pieza"
+                  (seleccionar)="seleccionarDental($event)"
+                />
+              }
+            </div>
+          </div>
+
+          <div class="min-w-max px-2">
+            <p class="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
+              Arcada inferior
+            </p>
+
+            <div class="flex items-center justify-center gap-2.5">
+              @for (pieza of piezasInferioresDerecha; track pieza) {
+                <app-tooth-svg
+                  [pieza]="pieza"
+                  [seleccionado]="piezaSeleccionada() === pieza"
+                  (seleccionar)="seleccionarDental($event)"
+                />
+              }
+
+              <div class="h-12 w-px bg-surface-border mx-1"></div>
+
+              @for (pieza of piezasInferioresIzquierda; track pieza) {
+                <app-tooth-svg
+                  [pieza]="pieza"
+                  [seleccionado]="piezaSeleccionada() === pieza"
+                  (seleccionar)="seleccionarDental($event)"
+                />
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-xl bg-surface-main p-4 text-sm">
+          <p class="font-medium text-ink">Selección actual</p>
+          <p class="mt-1 text-ink-muted">
+            Pieza:
+            <span class="font-semibold text-primary">{{ piezaSeleccionada() || 'Sin seleccionar' }}</span>
+            —
+            <span class="inline-block mx-1 text-surface-border">|</span>
+            Superficie:
+            <span class="font-semibold text-primary">{{ superficieSeleccionada() || 'Sin seleccionar' }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+        <h2 class="text-lg font-bold text-ink">Detalles de esta atención</h2>
+        <p class="mb-4 text-sm text-ink-muted">Lista de diagnósticos y tratamientos agregados.</p>
+
+        @if (request.detalles.length > 0) {
+          <div class="overflow-x-auto rounded-xl border border-surface-border">
+            <table class="w-full text-left text-sm min-w-[600px]">
+              <thead class="bg-surface-main text-ink-muted font-medium">
+                <tr>
+                  <th class="px-4 py-3">Pieza</th>
+                  <th class="px-4 py-3">Elemento</th>
+                  <th class="px-4 py-3">Detalle</th>
+                  <th class="px-4 py-3">Estado</th>
+                  <th class="px-4 py-3 text-right">Acción</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-surface-border">
+                @for (detalle of request.detalles; track $index) {
+                  <tr class="hover:bg-surface-main/40 transition-colors">
+                    <td class="px-4 py-3 font-bold text-primary">
+                      {{ detalle.numeroPieza }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                      <span
+                        class="rounded-md px-2 py-1 text-xs font-semibold text-white inline-block"
+                        [style.background]="colorElemento(detalle.idElementoClinico)"
+                      >
+                        {{ nombreElemento(detalle.idElementoClinico) }}
+                      </span>
+                    </td>
+
+                    <td class="px-4 py-3 text-ink-muted max-w-xs truncate">
+                      {{ detalle.diagnostico }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                      <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-main border border-surface-border">
+                        {{ detalle.estadoTratamiento }}
+                      </span>
+                    </td>
+
+                    <td class="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        (click)="eliminarDetalle($index)"
+                        class="text-xs font-semibold text-status-error hover:underline px-2 py-1"
+                      >
+                        Quitar
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="rounded-xl border border-dashed border-surface-border p-8 text-center text-sm text-ink-muted">
+            Aún no agregaste diagnósticos ni tratamientos.
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="space-y-6 lg:col-span-5 xl:col-span-4">
+      
+      <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+        <h2 class="text-lg font-bold text-ink">Atención clínica</h2>
+        <p class="mb-4 text-sm text-ink-muted">Datos generales de la consulta.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Motivo de consulta</label>
+            <input
+              type="text"
+              [(ngModel)]="request.motivoConsulta"
+              class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+              placeholder="Ej. Dolor dental"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Notas clínicas</label>
+            <textarea
+              [(ngModel)]="request.notasClinicas"
+              rows="3"
+              class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none resize-none"
+              placeholder="Observaciones generales del odontólogo"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+        <h2 class="text-lg font-bold text-ink">Registrar pieza</h2>
+        <p class="mb-4 text-sm text-ink-muted">Agrega el diagnóstico o tratamiento al detalle.</p>
+
+        <div class="mb-4 rounded-xl bg-surface-main p-4 text-sm border border-surface-border">
+          <p class="text-xs text-ink-muted uppercase tracking-wider font-semibold">Pieza seleccionada</p>
+          <p class="mt-1 font-bold text-ink">
+            {{ piezaSeleccionada() || 'Selecciona una pieza' }}
+            <span class="mx-1 text-surface-border">—</span>
+            {{ superficieSeleccionada() || 'Selecciona una superficie' }}
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Tipo de registro</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                (click)="tipoRegistro.set('Diagnostico')"
+                class="rounded-xl border px-3 py-2 text-sm font-medium transition-all duration-150"
+                [ngClass]="tipoRegistro() === 'Diagnostico'
+                  ? 'border-primary bg-primary text-white shadow-sm'
+                  : 'border-surface-border bg-white text-ink hover:bg-surface-main'"
+              >
+                Diagnóstico
+              </button>
+
+              <button
+                type="button"
+                (click)="tipoRegistro.set('Tratamiento')"
+                class="rounded-xl border px-3 py-2 text-sm font-medium transition-all duration-150"
+                [ngClass]="tipoRegistro() === 'Tratamiento'
+                  ? 'border-primary bg-primary text-white shadow-sm'
+                  : 'border-surface-border bg-white text-ink hover:bg-surface-main'"
+              >
+                Tratamiento
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Elemento clínico</label>
+            <select
+              [ngModel]="elementoSeleccionadoId()"
+              (ngModelChange)="elementoSeleccionadoId.set($event)"
+              class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option [ngValue]="null">Selecciona elemento</option>
+              @for (elemento of elementosPorTipo(); track elemento.id) {
+                <option [ngValue]="elemento.id">
+                  {{ elemento.nombre }} — {{ elemento.aplicaA }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Observación clínica</label>
+            <textarea
+              [ngModel]="observacionDetalle()"
+              (ngModelChange)="observacionDetalle.set($event)"
+              rows="2"
+              class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none resize-none"
+              placeholder="Ej. Caries moderada en superficie oclusal"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink">Estado</label>
+            <select
+              [ngModel]="estadoDetalle()"
+              (ngModelChange)="estadoDetalle.set($event)"
+              class="w-full rounded-xl border border-surface-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option value="Pendiente">Pendiente</option>
+              <option value="Realizado">Realizado</option>
+              <option value="En seguimiento">En seguimiento</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            (click)="agregarDetalleDesdePanel()"
+            class="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover shadow-sm"
+          >
+            Agregar al detalle
+          </button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
+        <h2 class="text-lg font-bold text-ink">Historial</h2>
+        <p class="mb-4 text-sm text-ink-muted">Últimos registros del paciente</p>
+
+        @if (cargando()) {
+          <p class="text-sm text-ink-muted animate-pulse">Cargando historial...</p>
+        }
+
+        <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+          @for (item of historial(); track $index) {
+            <div class="rounded-xl border border-surface-border p-3 bg-surface-main/30">
+              <p class="text-sm font-bold text-ink">Pieza {{ item.numeroPieza }}</p>
+              <p class="text-xs text-ink-muted mt-0.5">{{ item.diagnostico }}</p>
+              <p class="mt-1.5 text-xs font-semibold text-primary">{{ item.estadoTratamiento }}</p>
+            </div>
+          } @empty {
+            @if (!cargando()) {
+              <p class="text-sm text-ink-muted text-center py-2">Sin historial registrado.</p>
+            }
+          }
+        </div>
+      </div>
+
+      <button
+        type="button"
+        (click)="guardarAtencion()"
+        [disabled]="guardando()"
+        class="w-full rounded-xl bg-primary px-5 py-3.5 text-sm font-bold text-white transition hover:bg-primary-hover disabled:opacity-60 shadow-md"
+      >
+        {{ guardando() ? 'Guardando...' : 'Guardar atención' }}
+      </button>
+    </div>
+
+  </div>
+</section>

@@ -12,99 +12,72 @@
       </div>
 
       <nav class="flex flex-col gap-1.5">
-        <a
-          routerLink="/admin/dashboard"
-          routerLinkActive="bg-primary text-white"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="LayoutDashboard" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Dashboard</span>
-        </a>
+        @if (esAdmin()) {
+          <a routerLink="/admin/dashboard" routerLinkActive="bg-primary text-white" class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white">
+            <lucide-icon [img]="LayoutDashboard" class="h-5 w-5"></lucide-icon>
+            <span class="text-[15px] font-medium">Dashboard</span>
+          </a>
 
-        <a
-          routerLink="/admin/pacientes"
-          routerLinkActive="bg-primary text-white"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="Users" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Pacientes</span>
-        </a>
+          <a routerLink="/admin/pacientes" routerLinkActive="bg-primary text-white" class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white">
+            <lucide-icon [img]="Users" class="h-5 w-5"></lucide-icon>
+            <span class="text-[15px] font-medium">Pacientes</span>
+          </a>
 
-        <a
-          routerLink="/portal/citas"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="Calendar" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Citas</span>
-        </a>
+          <a routerLink="/admin/citas" routerLinkActive="bg-primary text-white" class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white">
+            <lucide-icon [img]="Calendar" class="h-5 w-5"></lucide-icon>
+            <span class="text-[15px] font-medium">Citas</span>
+          </a>
 
-        <a
-          routerLink="/admin/odontograma/1"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="Stethoscope" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Atenciones</span>
-        </a>
 
-        <a
-          routerLink="/admin/facturacion/1"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="DollarSign" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Ventas</span>
-        </a>
+          <a routerLink="/admin/ventas" routerLinkActive="bg-primary text-white" class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white">
+            <lucide-icon [img]="DollarSign" class="h-5 w-5"></lucide-icon>
+            <span class="text-[15px] font-medium">Ventas</span>
+          </a>
 
-        <a
-          routerLink="/admin/dashboard"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="UserCog" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Doctores</span>
-        </a>
+         
+        }
 
-        <a
-          routerLink="/admin/dashboard"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="BarChart3" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Reportes</span>
-        </a>
+        @if (esOdontologo()) {
+          <a routerLink="/admin/citas" routerLinkActive="bg-primary text-white" class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white">
+            <lucide-icon [img]="Calendar" class="h-5 w-5"></lucide-icon>
+            <span class="text-[15px] font-medium">Mis citas</span>
+          </a>
 
-        <a
-          routerLink="/admin/dashboard"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-ink-muted transition-all duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <lucide-icon [img]="Settings" class="h-5 w-5"></lucide-icon>
-          <span class="text-[15px] font-medium">Configuración</span>
-        </a>
+        }
       </nav>
     </div>
 
     <div class="mt-8 flex flex-col gap-3 border-t border-white/10 pt-4">
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/30 text-sm font-semibold text-surface-soft">
-          AC
+          {{ esOdontologo() ? 'OD' : 'AC' }}
         </div>
+
         <div class="flex flex-col">
-          <span class="text-sm font-semibold leading-tight">Admin Clínica</span>
-          <span class="text-xs text-white/50">admin&#64;clinica.com</span>
+          <span class="text-sm font-semibold leading-tight">
+            {{ esOdontologo() ? 'Odontólogo' : 'Admin Clínica' }}
+          </span>
+          <span class="text-xs text-white/50">
+            {{ esOdontologo() ? 'doctor@clinica.com' : 'admin@clinica.com' }}
+          </span>
         </div>
       </div>
 
-      <a
-        routerLink="/login"
+      <button
+        type="button"
+        (click)="cerrarSesion()"
         class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition-all duration-200 hover:bg-status-error/20 hover:text-status-error"
       >
         <lucide-icon [img]="LogOut" class="h-3.5 w-3.5"></lucide-icon>
         <span>Cerrar sesión</span>
-      </a>
+      </button>
     </div>
   </aside>
 
+  <div class="mx-auto w-full max-w-7xl p-6">
+    <router-outlet></router-outlet>
+  </div>
+  <app-confirm-dialog></app-confirm-dialog>
+  <app-toast></app-toast>
   
-
-    <div class="mx-auto w-full max-w-7xl p-6">
-      <router-outlet></router-outlet>
-    </div>
- 
 </div>

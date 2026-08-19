@@ -1,5 +1,6 @@
 package com.cibertec.denticore.security.entities;
 
+import com.cibertec.denticore.clinica.entities.HistoriaClinica;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -33,4 +34,7 @@ public class Paciente {
 
     @Column(nullable = false)
     private Boolean activo;
+
+    @OneToOne(mappedBy = "paciente", fetch = FetchType.LAZY)
+    private HistoriaClinica historiaClinica;
 }
