@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 public interface CitaRepository extends JpaRepository<Cita, Integer> {
 
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Cita c " +
-           "WHERE c.odontologo.idUsuario = :idOdontologo " +
-           "AND c.fechaHora = :fechaHora " +
-           "AND c.estado IN ('PENDIENTE', 'CONFIRMADA', 'EN_SALA_DE_ESPERA', 'ENVIADO_A_CONSULTORIO', 'EN_CURSO')")
-    boolean existsByOdontologoAndFechaHoraAndEstadoOcupado(
-            @Param("idOdontologo") Integer idOdontologo,
-            @Param("fechaHora") LocalDateTime fechaHora);
+       "WHERE c.odontologo.idUsuario = :idOdontologo " +
+       "AND c.fechaHora = :fechaHora " +
+       "AND c.estado IN ('PENDIENTE', 'CONFIRMADA', 'EN_SALA', 'EN_CURSO')")
+boolean existsByOdontologoAndFechaHoraAndEstadoOcupado(
+        @Param("idOdontologo") Integer idOdontologo,
+        @Param("fechaHora") LocalDateTime fechaHora);
 
     @Query(value = "SELECT c FROM Cita c " +
                    "JOIN FETCH c.paciente p " +
