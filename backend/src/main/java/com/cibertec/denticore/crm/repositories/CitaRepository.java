@@ -63,4 +63,21 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
                 @Param("inicio") LocalDateTime inicio,
                 @Param("fin") LocalDateTime fin,
                 Pageable pageable);
+
+
+
+                @Query(
+        value = "SELECT c FROM Cita c " +
+                "JOIN FETCH c.paciente p " +
+                "JOIN FETCH p.usuario " +
+                "JOIN FETCH c.odontologo o " +
+                "JOIN FETCH o.usuario " +
+                "WHERE c.paciente.idUsuario = :idPaciente " +
+                "ORDER BY c.fechaHora DESC",
+        countQuery = "SELECT COUNT(c) FROM Cita c " +
+                        "WHERE c.paciente.idUsuario = :idPaciente"
+        )
+        Page<Cita> findByPaciente(
+                @Param("idPaciente") Integer idPaciente,
+                Pageable pageable);
 }

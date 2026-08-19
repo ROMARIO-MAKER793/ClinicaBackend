@@ -2,7 +2,7 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-bold text-ink">Facturación</h1>
-      <p class="text-sm text-ink-muted">Cierre simulado de venta por atención odontológica</p>
+      <p class="text-sm text-ink-muted">Registro de pago por atención odontológica</p>
     </div>
 
     <button
@@ -15,8 +15,6 @@
   </div>
 
   <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
-    <h2 class="mb-4 text-lg font-bold text-ink">Paciente</h2>
-
     <div class="grid gap-4 md:grid-cols-4">
       <div>
         <p class="text-xs text-ink-muted">ID cita</p>
@@ -40,15 +38,22 @@
     </div>
   </div>
 
+  @if (error()) {
+    <div class="rounded-xl bg-status-error/10 p-4 text-sm text-status-error">
+      {{ error() }}
+    </div>
+  }
+
   <div class="grid gap-6 lg:grid-cols-3">
     <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card lg:col-span-2">
-      <h2 class="mb-4 text-lg font-bold text-ink">Detalle de atención</h2>
+      <h2 class="mb-4 text-lg font-bold text-ink">Detalle de facturación</h2>
 
       <div class="overflow-hidden rounded-xl border border-surface-border">
         <table class="w-full text-left text-sm">
           <thead class="bg-surface-main text-ink-muted">
             <tr>
               <th class="px-4 py-3">Descripción</th>
+              <th class="px-4 py-3">Pieza</th>
               <th class="px-4 py-3">Cantidad</th>
               <th class="px-4 py-3">Precio</th>
               <th class="px-4 py-3 text-right">Subtotal</th>
@@ -56,13 +61,32 @@
           </thead>
 
           <tbody>
-            @for (item of items; track $index) {
+            @for (item of itemsCarrito(); track $index) {
               <tr class="border-t border-surface-border">
-                <td class="px-4 py-3 font-medium text-ink">{{ item.descripcion }}</td>
-                <td class="px-4 py-3 text-ink-muted">{{ item.cantidad }}</td>
-                <td class="px-4 py-3 text-ink-muted">S/ {{ item.precio }}</td>
+                <td class="px-4 py-3 font-medium text-ink">
+                  {{ item.descripcion || ('Item #' + item.idItemCatalogo) }}
+                </td>
+
+                <td class="px-4 py-3 text-ink-muted">
+                  {{ item.numeroPieza || '-' }}
+                </td>
+
+                <td class="px-4 py-3 text-ink-muted">
+                  {{ item.cantidad }}
+                </td>
+
+                <td class="px-4 py-3 text-ink-muted">
+                  S/ {{ item.precioAplicado }}
+                </td>
+
                 <td class="px-4 py-3 text-right font-semibold text-ink">
-                  S/ {{ item.cantidad * item.precio }}
+                  S/ {{ item.cantidad * item.precioAplicado }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-ink-muted">
+                  Aún no hay ítems para facturar.
                 </td>
               </tr>
             }
@@ -109,16 +133,11 @@
         <button
           type="button"
           (click)="registrarPago()"
-          class="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover"
+          [disabled]="procesando()"
+          class="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
         >
-          Registrar pago
+          {{ procesando() ? 'Registrando...' : 'Registrar pago' }}
         </button>
-
-        @if (pagado()) {
-          <div class="rounded-xl bg-status-success/10 p-3 text-sm text-status-success">
-            Pago registrado correctamente. Venta guardada localmente.
-          </div>
-        }
       </div>
     </div>
   </div>

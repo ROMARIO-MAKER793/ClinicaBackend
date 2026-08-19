@@ -142,4 +142,23 @@ public Page<CitaListadoDTO> listarMisCitas(
                     pageable)
             .map(this::mapearCitaListado);
     }
+
+
+    @Override
+@Transactional(readOnly = true)
+public Page<CitaListadoDTO> listarMisCitasPaciente(
+        String dniUsuarioAutenticado,
+        Pageable pageable) {
+
+    Paciente paciente = pacienteRepository
+            .findByUsuarioDni(dniUsuarioAutenticado)
+            .orElseThrow(() ->
+                    new RuntimeException("Paciente no encontrado"));
+
+    return citaRepository
+            .findByPaciente(
+                    paciente.getIdUsuario(),
+                    pageable)
+            .map(this::mapearCitaListado);
+}
 }

@@ -22,5 +22,9 @@ public interface CitaService {
         LocalDate fecha,
         Pageable pageable);
 
+    Page<CitaListadoDTO> listarMisCitasPaciente(
+        String dniUsuarioAutenticado,
+        Pageable pageable);
+
     
 }

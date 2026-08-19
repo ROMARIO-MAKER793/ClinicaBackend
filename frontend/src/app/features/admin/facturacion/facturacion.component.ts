@@ -2,13 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CitaService } from '../../../core/services/cita.service';
-
-type ItemVentaSimulado = {
-  descripcion: string;
-  cantidad: number;
-  precio: number;
-};
+import { ItemPrevisualizacionVenta, ProcesarVentaRequest } from '../../../core/models/api.model';
+import { VentaService } from '../../../core/services/venta.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { ItemCarrito } from '../../../core/models/api.model';
 
 @Component({
   selector: 'app-facturacion',
@@ -18,7 +16,9 @@ type ItemVentaSimulado = {
 })
 export class FacturacionComponent {
 
-  private readonly citaService = inject(CitaService);
+  private readonly ventaService = inject(VentaService);
+  private readonly toastService = inject(ToastService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -33,59 +33,97 @@ export class FacturacionComponent {
 
   metodoPago = 'Efectivo';
   montoPagado = 0;
-  pagado = signal(false);
+  procesando = signal(false);
+  error = signal('');
 
-  items: ItemVentaSimulado[] = [
-    {
-      descripcion: 'Consulta odontológica',
-      cantidad: 1,
-      precio: 50
-    },
-    {
-      descripcion: 'Tratamiento registrado en odontograma',
-      cantidad: 1,
-      precio: 120
-    }
-  ];
+  itemsCarrito = signal<ItemPrevisualizacionVenta[]>([]);
 
   total(): number {
-    return this.items.reduce((acc, item) => acc + item.cantidad * item.precio, 0);
+    return this.itemsCarrito().reduce(
+      (acc, item) => acc + item.cantidad * item.precioAplicado,
+      0
+    );
+  }
+
+    ngOnInit(): void {
+    this.cargarPrevisualizacion();
+  }
+
+  cargarPrevisualizacion(): void {
+    this.error.set('');
+
+    this.ventaService.obtenerPrevisualizacion(this.idCita).subscribe({
+      next: (data) => {
+        this.idPaciente = data.idPaciente;
+        this.paciente = data.paciente;
+        this.dni = data.dni;
+        this.itemsCarrito.set(data.items);
+        this.montoPagado = data.total;
+      },
+      error: () => {
+        this.error.set('No se pudo cargar la previsualización de venta.');
+        this.toastService.error('No se pudo cargar la previsualización de venta.');
+      }
+    });
   }
 
   saldo(): number {
     return Math.max(this.total() - Number(this.montoPagado || 0), 0);
   }
 
-      registrarPago(): void {
-      const venta = {
-        idCita: this.idCita,
-        idPaciente: this.idPaciente,
-        paciente: this.paciente,
-        dni: this.dni,
-        metodoPago: this.metodoPago,
-        montoPagado: this.montoPagado,
-        total: this.total(),
-        saldo: this.saldo(),
-        items: this.items,
-        fecha: new Date().toISOString()
-      };
+  registrarPago(): void {
+    this.error.set('');
 
-      const ventas = JSON.parse(localStorage.getItem('ventas_simuladas') ?? '[]');
-      ventas.push(venta);
-
-      localStorage.setItem('ventas_simuladas', JSON.stringify(ventas));
-
-      this.citaService.actualizarEstado(this.idCita, 'FINALIZADA').subscribe({
-        next: () => {
-          this.pagado.set(true);
-          this.router.navigate(['/admin/citas']);
-        },
-        error: () => {
-          this.pagado.set(true);
-          alert('Pago guardado localmente, pero no se pudo finalizar la cita.');
-        }
-      });
+    if (this.itemsCarrito().length === 0) {
+      this.error.set('No hay ítems para facturar.');
+      this.toastService.warning('No hay ítems para facturar.');
+      return;
     }
+
+    if (!this.montoPagado || Number(this.montoPagado) <= 0) {
+      this.error.set('Ingresa un monto pagado válido.');
+      this.toastService.warning('Ingresa un monto pagado válido.');
+      return;
+    }
+
+    this.confirmService.abrir({
+      titulo: 'Registrar pago',
+      mensaje: '¿Seguro que deseas registrar este pago?',
+      textoConfirmar: 'Sí, registrar',
+      textoCancelar: 'Cancelar',
+      tipo: 'info',
+      onConfirmar: () => this.ejecutarRegistrarPago()
+    });
+  }
+
+  private ejecutarRegistrarPago(): void {
+    this.procesando.set(true);
+
+    this.ventaService.procesar({
+      idPaciente: this.idPaciente,
+      idCita: this.idCita,
+      tipoDocumento: 'ReciboInterno',
+      metodoPago: this.metodoPago,
+      montoPagado: Number(this.montoPagado),
+      itemsCarrito: this.itemsCarrito().map(item =>({
+        idItemCatalogo:item.idItemCatalogo,
+        cantidad:item.cantidad,
+        precioAplicado:item.precioAplicado,
+        numeroPieza:item.numeroPieza
+      }))
+    }).subscribe({
+      next: () => {
+        this.procesando.set(false);
+        this.toastService.success('Pago registrado correctamente.');
+        this.router.navigate(['/admin/citas']);
+      },
+      error: () => {
+        this.procesando.set(false);
+        this.error.set('No se pudo registrar el pago.');
+        this.toastService.error('No se pudo registrar el pago.');
+      }
+    });
+  }
 
   volver(): void {
     this.router.navigate(['/admin/citas']);

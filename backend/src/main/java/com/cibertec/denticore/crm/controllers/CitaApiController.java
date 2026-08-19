@@ -80,4 +80,19 @@ public class CitaApiController {
                     fecha,
                     pageRequest));
     }
+
+
+    @GetMapping("/mis-citas-paciente")
+public ResponseEntity<Page<CitaListadoDTO>> listarMisCitasPaciente(
+        Principal principal,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+    PageRequest pageRequest = PageRequest.of(page, size);
+
+    return ResponseEntity.ok(
+            citaService.listarMisCitasPaciente(
+                    principal.getName(),
+                    pageRequest));
+}
 }

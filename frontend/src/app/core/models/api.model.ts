@@ -40,11 +40,15 @@ export interface ItemCarrito {
   idItemCatalogo: number;
   cantidad: number;
   precioAplicado: number;
+  numeroPieza?: number | null;
 }
 
 export interface ProcesarVentaRequest {
   idPaciente: number;
   idCita: number;
+  tipoDocumento: string;
+  metodoPago: string;
+  montoPagado: number;
   itemsCarrito: ItemCarrito[];
 }
 
@@ -148,4 +152,43 @@ export interface ElementoOdontograma {
   categoria: 'Diagnostico' | 'Tratamiento';
   aplicaA: 'Diente' | 'Cara';
   colorHex: string;
+}
+
+//Facturacion
+export interface VentaListado {
+
+  id: number;
+  idCita: number;
+  idPaciente: number;
+  paciente: string;
+  dni: string;
+  tipoDocumento: string;
+  serie: string;
+  correlativo: number;
+  fechaEmision: string;
+  total: number;
+  montoPagado: number;
+  saldoPendiente: number;
+  metodoPago: string;
+  estadoPago: string;
+
+}
+
+
+export interface ItemPrevisualizacionVenta {
+  idItemCatalogo: number;
+  descripcion: string;
+  cantidad: number;
+  precioAplicado: number;
+  numeroPieza: number | null;
+}
+
+
+export interface PrevisualizacionVenta {
+  idCita: number;
+  idPaciente: number;
+  paciente: string;
+  dni: string;
+  total: number;
+  items: ItemPrevisualizacionVenta[];
 }
